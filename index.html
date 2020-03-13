@@ -5,29 +5,41 @@
 </head>
 <body>
   <div id="app">
-    <div>{{person.name}}--{{person.age}}</div>
+    <!-- <div>{{person.name}}--{{person.age}}</div>
     <div>{{person.sex}}</div>
     <ul>
       <li>1</li>
       <li>2</li>
       <li>3</li>
     </ul>
-    <p v-html="msg" class="name"></p>
     <p v-text="msg"></p>
-    <input type="text" v-model = "msg">
+    <p v-text="person.name"></p> -->
+    <p v-html="html"></p>
+    <!-- <input type="text" v-model = "msg">
+    <img v-bind:src="url">
+    <button v-on:click="handleClick">handleClick1</button>
+    <button @click="handleClick">handleClick2</button> -->
   </div>
   <!-- <script src="./vue.js"></script> -->
+  <script src="./observer.js"></script>
   <script src="./myvue.js"></script>
   <script>
-    const vue = new MVue({
+    const vm = new MVue({
       el: '#app',
       data: {
-        person: {
-          name: '小苏',
-          age: 18,
-          sex: '姑娘'
-        },
-        msg: '小苏是个小可爱'
+        // person: {
+        //   name: '小苏',
+        //   age: 18,
+        //   sex: '姑娘'
+        // },
+        // msg: '小苏是个小可爱',
+        html: '<h3>小苏是个小可爱</h3>',
+        // url: 'https://www.runoob.com/wp-content/themes/runoob/assets/img/runoob-logo.png'
+      },
+      methods: {
+        handleClick() {
+          console.log(this)
+        }
       }
     })
   </script>
