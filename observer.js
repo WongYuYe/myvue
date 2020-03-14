@@ -4,11 +4,11 @@ class Watcher {
     this.vm = vm;
     this.cb = cb;
     this.oldVal = this.getOldVal();
-    Dep.target = this;
   }
   getOldVal() {
+    Dep.target = this;
     const oldVal = compileUtil.getVal(this.expr, this.vm)
-    // Dep.target = null;
+    Dep.target = null;
     return oldVal
   }
   update() {
@@ -26,8 +26,7 @@ class Dep {
     this.subs.push(watcher)
   }
   notify() {
-    console.log('执行更新')
-    console.log(this.subs)
+    // console.log(this.subs)
     this.subs.forEach(w => w.update())
   }
 }
@@ -38,7 +37,11 @@ class Observer {
   observe(data) {
     if (data && typeof data === 'object') {
       Object.keys(data).forEach(key => {
-        this.defineReactive(data, key, data[key])
+        if (typeof data[key] === 'object') {
+          this.observe(data[key])
+        } else {
+          this.defineReactive(data, key, data[key])
+        }
       })
     }
   }
@@ -49,7 +52,7 @@ class Observer {
       configurable: false,
       get() {
         // 订阅数据变化，添加观察者
-        dep.addSub(dep.target)
+        Dep.target && dep.addSub(Dep.target)
         return value
       },
       set: (newVal) => {
@@ -59,6 +62,6 @@ class Observer {
         }
         dep.notify()
       }
-    })    
+    })
   }
 }

@@ -5,20 +5,17 @@
 </head>
 <body>
   <div id="app">
-    <!-- <div>{{person.name}}--{{person.age}}</div>
+    <div>{{person.name}}--{{person.age}}</div>
     <div>{{person.sex}}</div>
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-    </ul>
     <p v-text="msg"></p>
-    <p v-text="person.name"></p> -->
+    <!-- <p v-text="person.name"></p> -->
     <p v-html="html"></p>
-    <!-- <input type="text" v-model = "msg">
+    <input type="text" v-model = "msg">
     <img v-bind:src="url">
-    <button v-on:click="handleClick">handleClick1</button>
-    <button @click="handleClick">handleClick2</button> -->
+    <button v-on:click="handleClick1">handleClick1</button>
+    <button @click="handleClick2">handleClick2</button>
+    <button @click="handleClick3">handleClick3</button>
+    <button @click="handleClick4">handleClick4</button>
   </div>
   <!-- <script src="./vue.js"></script> -->
   <script src="./observer.js"></script>
@@ -27,19 +24,36 @@
     const vm = new MVue({
       el: '#app',
       data: {
-        // person: {
-        //   name: '小苏',
-        //   age: 18,
-        //   sex: '姑娘'
-        // },
-        // msg: '小苏是个小可爱',
+        person: {
+          name: '小苏',
+          age: 18,
+          sex: '姑娘'
+        },
+        msg: '小苏是个小可爱',
         html: '<h3>小苏是个小可爱</h3>',
-        // url: 'https://www.runoob.com/wp-content/themes/runoob/assets/img/runoob-logo.png'
+        url: 'https://www.runoob.com/wp-content/themes/runoob/assets/img/runoob-logo.png'
       },
       methods: {
-        handleClick() {
-          console.log(this)
-        }
+        handleClick1() {
+          this.person.name = '小野'
+          // this.$data.person.name = '小野'
+          // this.$data.person.age = 22
+        },
+        handleClick2() {
+          this.msg = '小苏小苏小阿苏'
+          // this.$data.person.name = '小野'
+          // this.$data.person.age = 22
+        },
+        handleClick3() {
+          this.url = '小苏小苏小阿苏'
+          // this.$data.person.name = '小野'
+          // this.$data.person.age = 22
+        },
+        handleClick4() {
+          this.msg = '小苏小苏小阿苏'
+          // this.$data.person.name = '小野'
+          // this.$data.person.age = 22
+        },
       }
     })
   </script>

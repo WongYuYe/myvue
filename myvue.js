@@ -11,8 +11,23 @@ class MVue {
       // 实现一个指令编译器compile
       new Compile(this.$el, this);
 
-      // 实现一个数据监听器watcher
+      // 数据代理到this
+      this.proxyData(this.$data)
     }
+  }
+  proxyData(data) {
+    Object.keys(data).forEach(key => {
+      Object.defineProperty(this, key, {
+        get() {
+          return data[key]
+        },
+        set(newVal) {
+          if (newVal !== data[key]) {
+            data[key] = newVal
+          }
+        }
+      })
+    })
   }
 }
 
@@ -22,6 +37,16 @@ const compileUtil = {
       return data[currentVal]
     }, vm.$data)
   },
+  setVal(expr, vm, newVal) {
+    expr.split('.').reduce((data, currentVal) => {
+      data[currentVal] = newVal
+    }, vm.$data)
+  },
+  getContentVal(expr, vm) {
+    return expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
+      return this.getVal(args[1], vm)
+    })
+  },
   text(node, expr, vm) {
     let text;
     // 判断格式是否为{{}}或者v-text
@@ -29,32 +54,53 @@ const compileUtil = {
       // expr为{{person.name}}--{{person.age}} {{person.name}}
       text = expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
         // args: [ "{{person.name}}", "person.name", 0, "{{person.name}}--{{person.age}}" ]，取args[1]
+        new Watcher(args[1], vm, () => {
+          this.updater.textUpdater(node, this.getContentVal(expr, vm));
+        })
         return this.getVal(args[1], vm)
       })
     } else {
       text = this.getVal(expr, vm);
+      new Watcher(expr, vm, (newVal) => {
+        this.updater.textUpdater(node, newVal);
+      })
     }
     this.updater.textUpdater(node, text);
+
   },
   html(node, expr, vm) {
+    const html = this.getVal(expr, vm);
+    this.updater.htmlUpdater(node, html);
     new Watcher(expr, vm, (newVal) => {
       this.updater.htmlUpdater(node, newVal);
     })
-    const html = this.getVal(expr, vm);
-    this.updater.htmlUpdater(node, html);
   },
   model(node, expr, vm) {
     const value = this.getVal(expr, vm);
     if (node.nodeName === 'INPUT') {
       this.updater.modelUpdater(node, value)
     }
+    new Watcher(expr, vm, (newVal) => {
+      this.updater.modelUpdater(node, newVal)
+    })
+    node.addEventListener('input',(e) => {
+      console.log(e.target)
+      this.setVal(expr, vm, e.target.value)
+    }, false)
   },
   bind(node, expr, vm, attrName) {
     const attr = this.getVal(expr, vm);
     this.updater.bindUpdater(node, attrName, attr)
+    new Watcher(expr, vm, (newVal) => {
+      this.updater.bindUpdater(node, attrName, newVal)
+    })
   },
   on(node, expr, vm, eventName) {
-    const fn = vm.$options.methods && vm.$options.methods[expr] 
+    const fn = vm.$options.methods && vm.$options.methods[expr]
+    if(!fn) {
+      console.error(`${expr} is not defined`)
+      return false
+    }
     node.addEventListener(eventName, fn.bind(vm), false)
   },
   updater: {
