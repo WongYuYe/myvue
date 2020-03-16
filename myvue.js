@@ -32,10 +32,14 @@ const compileUtil = {
     let newVal;
     newVal = this.getVal(expr, vm);
     this.updater.modelUpdater(node, newVal);
-    node.addEventListener("input", (e) => {
-      // this.updater.modelUpdater(node, e.target.value);
-      this.setVal(expr, vm, e.target.value)
-    }, false);
+    node.addEventListener(
+      "input",
+      e => {
+        // this.updater.modelUpdater(node, e.target.value);
+        this.setVal(expr, vm, e.target.value);
+      },
+      false
+    );
   },
   bind(node, expr, vm, attrName) {
     new Watcher(expr, vm, newVal => {
@@ -150,8 +154,7 @@ class Compile {
         compileUtil["on"](node, value, this.$vm, eventName);
       }
       // 移除指令属性
-      node.removeAttribute(name)
-
+      node.removeAttribute(name);
     });
   }
   compileText(node) {
@@ -177,7 +180,7 @@ class Vue {
       new Compile(this.$el, this);
 
       // 数据代理 this.$data => this
-      this.proxyData(this.$data)
+      this.proxyData(this.$data);
     }
   }
   proxyData(data) {
@@ -186,14 +189,14 @@ class Vue {
         enumerable: true,
         configurable: false,
         get() {
-          return data[key]
+          return data[key];
         },
         set(newVal) {
           if (newVal !== data[key]) {
-            data[key] = newVal
+            data[key] = newVal;
           }
         }
-      })
-    })
+      });
+    });
   }
 }
