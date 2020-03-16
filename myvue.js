@@ -1,152 +1,199 @@
-class MVue {
-  constructor(options) {
-    this.$el = options.el;
-    this.$data = options.data;
-    // this.$methods = options.$methods;
-    this.$options = options;
-
-    if (this.$el) {
-      // 实现一个数据观察者observer
-      new Observer(this.$data)
-      // 实现一个指令编译器compile
-      new Compile(this.$el, this);
-
-      // 实现一个数据监听器watcher
-    }
-  }
-}
-
+// compile方法类
 const compileUtil = {
-  getVal(expr, vm) {
-    return expr.split('.').reduce((data, currentVal) => {
-      return data[currentVal]
-    }, vm.$data)
-  },
   text(node, expr, vm) {
-    let text;
-    // 判断格式是否为{{}}或者v-text
-    if(expr.includes('{{')) {
-      // expr为{{person.name}}--{{person.age}} {{person.name}}
-      text = expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
-        // args: [ "{{person.name}}", "person.name", 0, "{{person.name}}--{{person.age}}" ]，取args[1]
-        return this.getVal(args[1], vm)
-      })
+    let newVal;
+    if (expr.includes("{{")) {
+      newVal = expr.replace(/\{\{(.+?)\}\}/g, (...match) => {
+        new Watcher(match[1].trim(), vm, () => {
+          this.updater.textUpdater(node, this.getNewVal(expr, vm));
+        });
+        return this.getVal(match[1].trim(), vm);
+      });
     } else {
-      text = this.getVal(expr, vm);
+      new Watcher(expr, vm, newVal => {
+        this.updater.textUpdater(node, newVal);
+      });
+      newVal = this.getVal(expr, vm);
     }
-    this.updater.textUpdater(node, text);
+    this.updater.textUpdater(node, newVal);
   },
   html(node, expr, vm) {
-    new Watcher(expr, vm, (newVal) => {
+    new Watcher(expr, vm, newVal => {
       this.updater.htmlUpdater(node, newVal);
-    })
-    const html = this.getVal(expr, vm);
-    this.updater.htmlUpdater(node, html);
+    });
+    let newVal;
+    newVal = this.getVal(expr, vm);
+    this.updater.htmlUpdater(node, newVal);
   },
   model(node, expr, vm) {
-    const value = this.getVal(expr, vm);
-    if (node.nodeName === 'INPUT') {
-      this.updater.modelUpdater(node, value)
-    }
+    new Watcher(expr, vm, newVal => {
+      this.updater.modelUpdater(node, newVal);
+    });
+    let newVal;
+    newVal = this.getVal(expr, vm);
+    this.updater.modelUpdater(node, newVal);
+    node.addEventListener("input", (e) => {
+      // this.updater.modelUpdater(node, e.target.value);
+      this.setVal(expr, vm, e.target.value)
+    }, false);
   },
   bind(node, expr, vm, attrName) {
-    const attr = this.getVal(expr, vm);
-    this.updater.bindUpdater(node, attrName, attr)
+    new Watcher(expr, vm, newVal => {
+      this.updater.bindUpdater(node, attrName, newVal);
+    });
+    let newVal;
+    newVal = this.getVal(expr, vm);
+    this.updater.bindUpdater(node, attrName, newVal);
   },
   on(node, expr, vm, eventName) {
-    const fn = vm.$options.methods && vm.$options.methods[expr] 
-    node.addEventListener(eventName, fn.bind(vm), false)
+    const fn = vm.$options.methods && vm.$options.methods[expr];
+    node.addEventListener(eventName, fn.bind(vm), false);
+  },
+  getVal(expr, vm) {
+    return expr.split(".").reduce((data, currentVal) => {
+      return data[currentVal];
+    }, vm.$data);
+  },
+  getNewVal(expr, vm) {
+    return expr.replace(/\{\{(.+?)\}\}/g, (...match) => {
+      return this.getVal(match[1].trim(), vm);
+    });
+  },
+  setVal(expr, vm, newVal) {
+    expr.split(".").reduce((data, currentVal) => {
+      data[currentVal] = newVal;
+    }, vm.$data);
   },
   updater: {
-    textUpdater(node, value) {
-      node.textContent = value;
+    textUpdater(node, textVal) {
+      node.textContent = textVal;
     },
-    htmlUpdater(node, value) {
-      node.innerHTML = value;
+    htmlUpdater(node, htmlVal) {
+      node.innerHTML = htmlVal;
     },
-    modelUpdater(node, value) {
-      node.value = value;
+    modelUpdater(node, modelVal) {
+      node.value = modelVal;
     },
-    bindUpdater(node, attrName, attrVlaue) {
-      node.setAttribute(attrName, attrVlaue)
+    bindUpdater(node, attrName, attrVal) {
+      node.setAttribute(attrName, attrVal);
     }
   }
 };
 
+// Compile类
 class Compile {
   constructor(el, vm) {
-    this.el = this.isElementNode(el) ? el : document.querySelector(el);
-    this.vm = vm;
-    // 1.转化为文档碎片，减少页面回流和重绘
-    const frag = this.node2Fragment(this.el);
+    this.$vm = vm;
 
-    // 2.编译
+    this.$el = this.isElementNode(el) ? el : document.querySelector(el);
+
+    // 转化为文档碎片， 防止重绘和回流
+    const frag = this.node2Fragment(this.$el);
+
+    // 返回编译过的文档碎片
     const compileFrag = this.compile(frag);
 
-    // 3.挂载
-    this.el.appendChild(compileFrag);
+    // 挂载到节点上
+    this.$el.appendChild(compileFrag);
   }
+  isElementNode(node) {
+    return node.nodeType === 1;
+  }
+  node2Fragment(node) {
+    const frag = document.createDocumentFragment();
+    let firstChild;
+    while ((firstChild = node.firstChild)) {
+      frag.appendChild(firstChild);
+    }
+    return frag;
+  }
+  // 是否为vue指令
+  isVueDirective(attrName) {
+    return attrName.startsWith("v-");
+  }
+  // 是否为事件名
+  isEventName(attrName) {
+    return attrName.startsWith("@");
+  }
+  // 编译模板
   compile(frag) {
     [...frag.childNodes].forEach(child => {
       if (child.nodeType === 1) {
-        // 编译元素节点
+        // 元素节点
         this.compileElement(child);
       } else if (child.nodeType === 3) {
-        // 编译文本节点
+        // 文本节点
         this.compileText(child);
       }
+      // 递归编译
       if (child.childNodes && child.childNodes.length) {
         this.compile(child);
       }
     });
     return frag;
   }
+  // 编译元素节点
   compileElement(node) {
-    // 获取属性
     const attributes = node.attributes;
     [...attributes].forEach(attr => {
-      const { nodeName, value } = attr;
-      // 是否指令 v-html v-text v-model v-on:click v-bind:src
-      if (this.isDirective(nodeName)) {
-        const [, directive] = nodeName.split("-");
+      const { name, value } = attr;
+      // 判断vue指令如v-text v-model v-html v-on:click v-bind:src
+      if (this.isVueDirective(name)) {
+        // 拆分属性
+        const [, directive] = name.split("-");
         const [dirName, eventName] = directive.split(":");
 
-        // 编译数据，数据驱动视图
-        compileUtil[dirName](node, value, this.vm, eventName);
+        compileUtil[dirName](node, value, this.$vm, eventName);
+      } else if (this.isEventName(name)) {
+        const [, eventName] = name.split("@");
 
-        // 删除指令
-        node.removeAttribute(`v-${directive}`)
-      } else if (this.isEventName(nodeName)) {
-        const [,eventName] = nodeName.split('@')
-        // 编译数据，数据驱动视图
-        compileUtil['on'](node, value, this.vm, eventName);
+        compileUtil["on"](node, value, this.$vm, eventName);
       }
+      // 移除指令属性
+      node.removeAttribute(name)
+
     });
-    // node.attributes['v-text']
-  }
-  isDirective(nodeName) {
-    return nodeName.startsWith('v-')
-  }
-  isEventName(nodeName) {
-    return nodeName.startsWith('@')
   }
   compileText(node) {
-    const regexp = /\{{2}(.+)\}{2}/g;
-    if(regexp.test(node.textContent)) {
-      compileUtil['text'](node, node.textContent, this.vm)
+    const reg = /\{\{(.+?)\}\}/g;
+    if (reg.test(node.textContent)) {
+      compileUtil["text"](node, node.textContent, this.$vm);
     }
   }
-  node2Fragment(el) {
-    // 创建文档碎片
-    let frag = document.createDocumentFragment();
-    let firstChild;
-    while ((firstChild = el.firstChild)) {
-      // fragment的appendChild移动dom
-      frag.appendChild(firstChild);
+}
+
+// Vue类
+class Vue {
+  constructor(options) {
+    this.$options = options;
+    this.$el = options.el;
+    this.$data = options.data;
+
+    // 当有el时再进行下一步
+    if (this.$el) {
+      // 数据劫持
+      new Observer(this.$data);
+      // 编译模板
+      new Compile(this.$el, this);
+
+      // 数据代理 this.$data => this
+      this.proxyData(this.$data)
     }
-    return frag;
   }
-  isElementNode(node) {
-    return node.nodeType === 1;
+  proxyData(data) {
+    Reflect.ownKeys(data).forEach(key => {
+      Object.defineProperty(this, key, {
+        enumerable: true,
+        configurable: false,
+        get() {
+          return data[key]
+        },
+        set(newVal) {
+          if (newVal !== data[key]) {
+            data[key] = newVal
+          }
+        }
+      })
+    })
   }
 }

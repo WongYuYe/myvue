@@ -5,40 +5,37 @@
 </head>
 <body>
   <div id="app">
-    <!-- <div>{{person.name}}--{{person.age}}</div>
-    <div>{{person.sex}}</div>
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-    </ul>
-    <p v-text="msg"></p>
-    <p v-text="person.name"></p> -->
-    <p v-html="html"></p>
-    <!-- <input type="text" v-model = "msg">
-    <img v-bind:src="url">
-    <button v-on:click="handleClick">handleClick1</button>
-    <button @click="handleClick">handleClick2</button> -->
+    {{ person.name }}
+    <div>{{ person.name }} --- {{ person.age }}</div>
+    <div>你好啊，我是{{ person.name }}</div>
+    <div v-text="msg"></div>
+    <div v-text="person.name"></div>
+    <div v-html="html"></div>
+    <div v-bind:role="person.name"></div>
+    <div v-text="html"></div>
+    <input type="text" v-model="html">
+    <button v-on:click="handleClick">handleClick</button>
+    <button @click="handleClick">handleClick</button>
   </div>
-  <!-- <script src="./vue.js"></script> -->
   <script src="./observer.js"></script>
   <script src="./myvue.js"></script>
   <script>
-    const vm = new MVue({
+    const vm = new Vue({
       el: '#app',
       data: {
-        // person: {
-        //   name: '小苏',
-        //   age: 18,
-        //   sex: '姑娘'
-        // },
-        // msg: '小苏是个小可爱',
+        person: {
+          name: '小苏',
+          age: 18,
+          sex: '姑娘'
+        },
+        msg: '小苏是个小可爱',
         html: '<h3>小苏是个小可爱</h3>',
         // url: 'https://www.runoob.com/wp-content/themes/runoob/assets/img/runoob-logo.png'
       },
       methods: {
         handleClick() {
-          console.log(this)
+          this.msg = '小阿苏'
+          this.person.name = '大阿苏'
         }
       }
     })
