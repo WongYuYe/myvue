@@ -5,15 +5,14 @@
 </head>
 <body>
   <div id="app">
-    {{ person.name }}
     <div>{{ person.name }} --- {{ person.age }}</div>
     <div>你好啊，我是{{ person.name }}</div>
     <div v-text="msg"></div>
     <div v-text="person.name"></div>
-    <div v-html="html"></div>
+    <div v-html="msg"></div>
     <div v-bind:role="person.name"></div>
-    <div v-text="html"></div>
-    <input type="text" v-model="html">
+    <div v-text="msg"></div>
+    <input type="text" v-model="msg">
     <button v-on:click="handleClick">handleClick</button>
     <button @click="handleClick">handleClick</button>
   </div>
@@ -29,11 +28,14 @@
           sex: '姑娘'
         },
         msg: '小苏是个小可爱',
-        html: '<h3>小苏是个小可爱</h3>',
+        str: '<h3>小苏是个小可爱</h3>',
         url: 'https://www.runoob.com/wp-content/themes/runoob/assets/img/runoob-logo.png'
       },
       methods: {
         handleClick() {
+          // this.$data.msg = '小阿苏'
+          // this.$data.person.name = '大阿苏'
+          // this.$data.person.age = 22
           this.msg = '小阿苏'
           this.person.name = '大阿苏'
         }
