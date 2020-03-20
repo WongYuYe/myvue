@@ -11,6 +11,7 @@ const profile = (
   </div>
 )
 
+// vdom -> dom
 function generateDom(domObj) {
   let $el;
   if (domObj.type) {
@@ -33,11 +34,12 @@ function generateDom(domObj) {
   return $el;
 }
 
-function isTypeChanged(domObj1, domObj2) {
-  if (domObj1.type !== undefined && domObj2.type !== undefined) {
-    return domObj1.type !== domObj2.type
+// 判断节点类型改变
+function isTypeChanged(node1, node2) {
+  if (node1.type !== undefined && node2.type !== undefined) {
+    return node1.type !== node2.type
   }
-  return domObj1 !== domObj2
+  return node1 !== node2
 }
 
 const types = {
@@ -51,6 +53,7 @@ const types = {
   Function: '[object Function]',
   Null: '[object Null]',
 }
+
 
 function vDom($parent, oldNode, newNode, index = 0) {
   const $currentNode = $parent.childNodes[index];
@@ -103,10 +106,9 @@ function vDom($parent, oldNode, newNode, index = 0) {
       vDom($currentNode, oldNode.children[i], newNode.children[i], i)
     }
   }
-
-  
 }
 
+// 判断节点变化
 function isObjectChanged(obj1, obj2) {
   // 判断数据类型是否一致
   if (types.get(obj1) !== types.get(obj2)) {
