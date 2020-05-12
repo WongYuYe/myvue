@@ -11,6 +11,8 @@ const profile = (
   </div>
 )
 
+console.log(profile)
+
 // vdom -> dom
 function generateDom(domObj) {
   let $el;
