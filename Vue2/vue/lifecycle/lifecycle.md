@@ -11,10 +11,10 @@ el?el: 调用vm.$mount(el) -> template? template: el
 因此template的优先级高于el
 
 #### beforeMount
-创建vm.$el并用其替换"el"，即挂载到el上
+创建vm.$el并用其替换"el"，即挂载到el上，虚拟的
 
 #### mounted
-挂载完毕，可对data进行修改
+真实DOM挂载完毕，可对data进行修改
 
 #### beforeUpdate
 virtual dom重新渲染并更新

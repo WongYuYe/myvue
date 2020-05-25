@@ -2,7 +2,7 @@
 
 - 父子组件通信：本质通过父组件传递数据和方法，子组件展示数据，通过$emit调用父组件方法
 
-```code
+```js
 <!-- 父组件 -->
 <template>
   <div @click = "parentAdd">加1</div>
@@ -48,7 +48,8 @@
 ```
 
 - 组件间通信：Bus中央事件总线
-```
+
+```js
 <!-- main.js -->
 const vm = new Vue({
   el,
@@ -73,7 +74,8 @@ this.$root.$on(eventName, (data) => {
   - mutations: 相当于methods，mutation只能commit state
   - actions: commit mutations，可以异步
   - modules: 分模块，每个模块各自包括state、getters、mutations、actions
-```
+
+```js
 const store = new Vuex.Store({
   state,
   getters,
