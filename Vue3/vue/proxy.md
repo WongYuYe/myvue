@@ -11,7 +11,7 @@
 
 ##### vue3: [proxy](https://www.yuque.com/ostwind/es6/docs-proxy)
 
-```
+```js
 // proxy相当于在对象外层添加一层拦截
 // Reflect用于执行对象的默认操作， 参考https://www.yuque.com/ostwind/es6/docs-reflect
 function reactive(data) {

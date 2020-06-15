@@ -1,15 +1,15 @@
 ##### 事例
-```
+```js
 <div id="app"></div>
 <script src="./vue.global.js"></script>
 <script>
 const { createApp, reactive, couputed, toRefs, watch } = Vue
 const App = {
-  template: "
+  template: `
     <div>count: {{ count }}</div>
     <div>doubleCount: {{ doubleCount }}</div>
     <div>price: {{ price }}</div>
-  ",
+  `,
   setup() {
     // 申明state对象
     const state = reactive({
