@@ -27,3 +27,5 @@ virtual dom重新渲染并更新
 
 #### destroyed
 周期结束
+
+[详解Vue生命周期](https://segmentfault.com/a/1190000011381906#comment-area)
